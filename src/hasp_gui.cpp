@@ -242,14 +242,12 @@ void guiSetup()
     lv_disp_drv_init(&disp_drv);
     disp_drv.buffer   = &disp_buf;
     disp_drv.flush_cb = gui_flush_cb;
-
-    if(gui_settings.rotation % 2) {
-        disp_drv.hor_res = tft_height;
-        disp_drv.ver_res = tft_width;
-    } else {
-        disp_drv.hor_res = tft_width;
-        disp_drv.ver_res = tft_height;
-    }
+    // Use runtime panel dimensions after driver rotation is applied.
+    // On some CYD panel revisions, parity-based rotation logic (%2) does not
+    // match actual panel memory mapping and leads to partial flush areas.
+    disp_drv.hor_res = haspTft.width();
+    disp_drv.ver_res = haspTft.height();
+    LOG_VERBOSE(TAG_GUI, F("LVGL RES runtime: %dx%d"), disp_drv.hor_res, disp_drv.ver_res);
 
     lv_disp_t* display = lv_disp_drv_register(&disp_drv);
     lv_disp_set_rotation(display, LV_DISP_ROT_NONE);
